@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection, ObjectId } from "mongodb";
+import { MongoClient, Db, Collection, ObjectId, Document } from "mongodb";
 import { Entry, Holding, Plan } from "./types";
 
 if (!process.env.MONGODB_URI) {
@@ -33,7 +33,7 @@ export async function getDatabase(): Promise<Db> {
   return client.db("expense_tracker");
 }
 
-export async function getCollection<T = any>(name: string): Promise<Collection<T>> {
+export async function getCollection<T extends Document = Document>(name: string): Promise<Collection<T>> {
   const db = await getDatabase();
   return db.collection<T>(name);
 }
