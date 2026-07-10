@@ -19,25 +19,23 @@ export default function DateRangeFilter({ selected, onChange }: DateRangeFilterP
   ];
 
   return (
-    <div className="gaming-card px-4 sm:px-5 py-3 sm:py-4 mb-4 sm:mb-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <span className="text-sm text-gray-400 font-medium">View:</span>
-        <div className="flex gap-2 flex-wrap">
-          {ranges.map((range) => (
-            <button
-              key={range.value}
-              onClick={() => onChange(range.value)}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 ${
-                selected === range.value
-                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <span>{range.icon}</span>
-              <span className="hidden sm:inline">{range.label}</span>
-            </button>
-          ))}
-        </div>
+    <div className="flex items-center justify-between gap-3 mb-4">
+      <span className="text-sm text-gray-400 font-medium">View:</span>
+      <div className="flex gap-2 flex-wrap">
+        {ranges.map((range) => (
+          <button
+            key={range.value}
+            onClick={() => onChange(range.value)}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5 ${
+              selected === range.value
+                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <span>{range.icon}</span>
+            <span className="hidden sm:inline">{range.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );

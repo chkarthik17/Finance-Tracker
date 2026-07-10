@@ -59,33 +59,28 @@ export default function DataManagement({ currentUser, onArchiveComplete }: DataM
   }
 
   return (
-    <div className="gaming-card px-4 sm:px-5 py-4 sm:py-5 mb-4 sm:mb-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="text-sm sm:text-base font-semibold text-white mb-1">
-            📊 Data Management
-          </h3>
-          <p className="text-xs text-gray-400">
-            Export & archive your expense data
-          </p>
-        </div>
-        <div className="flex gap-2 sm:gap-3 flex-wrap">
-          <button
-            onClick={handleExportCSV}
-            className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-lg transition-all duration-300 flex items-center gap-2"
-          >
-            <span>📥</span>
-            <span>Download CSV</span>
-          </button>
-          <button
-            onClick={handleArchiveOldData}
-            disabled={archiving}
-            className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
-          >
-            <span>🗑️</span>
-            <span>{archiving ? "Archiving..." : "Archive Old Data"}</span>
-          </button>
-        </div>
+    <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+      <div>
+        <h3 className="text-sm font-medium text-gray-400">
+          Data Management
+        </h3>
+      </div>
+      <div className="flex gap-2 sm:gap-3 flex-wrap">
+        <button
+          onClick={handleExportCSV}
+          className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md transition-all duration-300 flex items-center gap-2"
+        >
+          <span>📥</span>
+          <span>Download CSV</span>
+        </button>
+        <button
+          onClick={handleArchiveOldData}
+          disabled={archiving}
+          className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-md transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
+        >
+          <span>🗑️</span>
+          <span className="hidden sm:inline">{archiving ? "Archiving..." : "Archive"}</span>
+        </button>
       </div>
 
       {archiveResult && (

@@ -71,17 +71,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Quick Summary Cards */}
-        {(tab === "Ledger" || tab === "Entries") && (
+        {/* Quick Summary Cards - Only on Dashboard */}
+        {tab === "Ledger" && (
           <QuickSummary currentUser={currentUser} />
         )}
 
-        {/* Date Range Filter */}
+        {/* Date Range Filter & Data Management - Only on Entries */}
         {tab === "Entries" && (
-          <>
+          <div className="space-y-4">
             <DateRangeFilter selected={dateRange} onChange={setDateRange} />
             <DataManagement currentUser={currentUser} onArchiveComplete={loadAll} />
-          </>
+          </div>
         )}
 
         {loadError && (
