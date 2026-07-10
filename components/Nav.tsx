@@ -32,20 +32,9 @@ export default function Nav({
               The Ledger
             </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <p className="text-xs text-gray-400">Live</p>
-            </div>
-            <button
-              onClick={async () => {
-                await fetch("/api/auth/logout", { method: "POST" });
-                window.location.href = "/login";
-              }}
-              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all"
-            >
-              🔒 Logout
-            </button>
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <p className="text-xs text-gray-400">Live</p>
           </div>
         </div>
         <nav className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-3 sm:pb-4 hide-scrollbar">
