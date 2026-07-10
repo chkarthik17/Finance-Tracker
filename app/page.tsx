@@ -13,6 +13,7 @@ import UserToggle from "@/components/UserToggle";
 import DateRangeFilter, { DateRange, getDateRangeParams } from "@/components/DateRangeFilter";
 import QuickSummary from "@/components/QuickSummary";
 import DataManagement from "@/components/DataManagement";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>("Ledger");
