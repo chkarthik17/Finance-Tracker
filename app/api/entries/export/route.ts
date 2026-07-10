@@ -5,10 +5,10 @@ import { Entry } from "@/lib/types";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const person = searchParams.get("person");
+    const person = searchParams.get("person") as "Karthik" | "Likhita" | null;
 
     const collection = await getCollection<Entry>("entries");
-    const query = person ? { person } : {};
+    const query: any = person ? { person } : {};
 
     const entries = await collection
       .find(query)
