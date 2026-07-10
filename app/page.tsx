@@ -59,16 +59,14 @@ export default function Home() {
       <UserToggle currentUser={currentUser} onToggle={setCurrentUser} />
       <Nav active={tab} onChange={setTab} />
       <main className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 grid-pattern min-h-screen">
-        {/* User Header */}
-        <div className="mb-4 sm:mb-6 animate-fade-in">
-          <div className="gaming-card px-4 sm:px-5 py-3 sm:py-3.5">
-            <h1 className="text-lg sm:text-xl font-semibold gradient-text">
-              {currentUser}'s Financial Dashboard
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Real-time expense tracking & management
-            </p>
-          </div>
+        {/* User Header - Compact for mobile */}
+        <div className="mb-3 sm:mb-4 animate-fade-in">
+          <h1 className="text-sm sm:text-base font-semibold text-white">
+            {currentUser}'s Dashboard
+          </h1>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+            Track expenses in real-time
+          </p>
         </div>
 
         {/* Quick Summary Cards - Only on Dashboard */}
