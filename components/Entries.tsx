@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { supabase } from "@/lib/supabase";
+import { entriesAPI } from "@/lib/api";
 import { CATEGORIES, Category, Entry, EntryType, PEOPLE, Person } from "@/lib/types";
 import { formatCurrency } from "@/lib/calculations";
 
@@ -18,11 +18,13 @@ const emptyForm = {
 export default function Entries({
   entries,
   onChanged,
+  currentUser,
 }: {
   entries: Entry[];
   onChanged: () => void;
+  currentUser: Person;
 }) {
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState({ ...emptyForm, person: currentUser });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterPerson, setFilterPerson] = useState<"All" | Person>("All");
   const [filterType, setFilterType] = useState<"All" | EntryType>("All");
@@ -37,9 +39,14 @@ export default function Entries({
   }, [entries, filterPerson, filterType]);
 
   function resetForm() {
-    setForm(emptyForm);
+    setForm({ ...emptyForm, person: currentUser });
     setEditingId(null);
   }
+
+  // Update form person when currentUser changes
+  useEffect(() => {
+    setForm(prev => ({ ...prev, person: currentUser }));
+  }, [currentUser]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,232 +66,248 @@ export default function Entries({
       note: form.note || null,
     };
 
-    const { error: dbError } = editingId
-      ? await supabase.from("entries").update(payload).eq("id", editingId)
-      : await supabase.from("entries").insert(payload);
-
-    setSaving(false);
-    if (dbError) {
-      setError(dbError.message);
-      return;
+    try {
+      if (editingId) {
+        await entriesAPI.update(editingId, payload);
+      } else {
+        await entriesAPI.create(payload as any);
+      }
+      resetForm();
+      onChanged();
+    } catch (err: any) {
+      setError(err.message);
     }
-    resetForm();
-    onChanged();
+    setSaving(false);
   }
 
   function startEdit(entry: Entry) {
+    // Prevent editing entries that don't belong to current user
+    if (entry.person !== currentUser) {
+      setError(`You cannot edit ${entry.person}'s entries. Switch to ${entry.person}'s dashboard to edit.`);
+      return;
+    }
     setEditingId(entry.id);
     setForm({
       date: entry.date,
       type: entry.type,
       amount: String(entry.amount),
       category: entry.category,
-      person: entry.person,
+      person: currentUser, // Always use current user
       note: entry.note || "",
     });
   }
 
   async function handleDelete(id: string) {
-    const { error: dbError } = await supabase.from("entries").delete().eq("id", id);
-    if (dbError) {
-      setError(dbError.message);
+    const entry = entries.find(e => e.id === id);
+    // Prevent deleting entries that don't belong to current user
+    if (entry && entry.person !== currentUser) {
+      setError(`You cannot delete ${entry.person}'s entries. Switch to ${entry.person}'s dashboard to delete.`);
       return;
     }
-    if (editingId === id) resetForm();
-    onChanged();
+    try {
+      await entriesAPI.delete(id);
+      if (editingId === id) resetForm();
+      onChanged();
+    } catch (err: any) {
+      setError(err.message);
+    }
   }
 
   return (
-    <div className="grid lg:grid-cols-[340px_1fr] gap-6">
-      <form onSubmit={handleSubmit} className="ledger-card px-5 py-5 h-fit space-y-4">
-        <p className="font-display text-lg text-ledger">
-          {editingId ? "Edit entry" : "New entry"}
+    <div className="grid lg:grid-cols-[360px_1fr] gap-4 sm:gap-6">
+      <form onSubmit={handleSubmit} className="gaming-card px-4 sm:px-6 py-5 sm:py-6 h-fit space-y-4 sm:space-y-5 animate-slide-in">
+        <p className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          {editingId ? "✏️ Edit Entry" : "➕ New Entry"}
         </p>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 sm:gap-3">
           {(["expense", "income"] as EntryType[]).map((t) => (
             <button
               type="button"
               key={t}
               onClick={() => setForm((f) => ({ ...f, type: t }))}
               className={clsx(
-                "flex-1 py-2 text-sm rounded border capitalize",
+                "flex-1 py-2.5 sm:py-3 text-sm font-semibold rounded-lg border-2 capitalize transition-all duration-300",
                 form.type === t
                   ? t === "income"
-                    ? "bg-ledger text-paper border-ledger"
-                    : "bg-rust text-paper border-rust"
-                  : "border-line text-ink/60"
+                    ? "bg-gradient-to-r from-green-400 to-emerald-500 text-white border-green-500 shadow-lg"
+                    : "bg-gradient-to-r from-pink-500 to-rose-500 text-white border-pink-500 shadow-lg"
+                  : "border-dark-border bg-dark-card text-gray-400 hover:border-blue-500/50 hover:text-white"
               )}
             >
-              {t}
+              <span className="text-base sm:text-lg">{t === "income" ? "💰" : "💸"}</span>
+              <span className="ml-1 sm:ml-2">{t}</span>
             </button>
           ))}
         </div>
 
         <label className="block text-sm">
-          <span className="text-ink/60 text-xs">Amount (₹)</span>
+          <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Amount (₹)</span>
           <input
             type="number"
             min="0"
             step="0.01"
             value={form.amount}
             onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-            className="mt-1 w-full border border-line rounded px-3 py-2 font-mono bg-paper"
+            className="mt-2 w-full border-2 border-dark-border rounded-lg px-4 py-3 font-mono bg-dark-card text-white focus:border-neon-blue focus:ring-2 focus:ring-neon-blue/20 transition-all outline-none"
             placeholder="0.00"
             required
           />
         </label>
 
         <label className="block text-sm">
-          <span className="text-ink/60 text-xs">Date</span>
+          <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Date</span>
           <input
             type="date"
             value={form.date}
             onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-            className="mt-1 w-full border border-line rounded px-3 py-2 bg-paper"
+            className="mt-2 w-full border-2 border-dark-border rounded-lg px-4 py-3 bg-dark-card text-white focus:border-neon-blue focus:ring-2 focus:ring-neon-blue/20 transition-all outline-none"
             required
           />
         </label>
 
         <label className="block text-sm">
-          <span className="text-ink/60 text-xs">Category</span>
+          <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Category</span>
           <select
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as Category }))}
-            className="mt-1 w-full border border-line rounded px-3 py-2 bg-paper"
+            className="mt-2 w-full border-2 border-dark-border rounded-lg px-4 py-3 bg-dark-card text-white focus:border-neon-blue focus:ring-2 focus:ring-neon-blue/20 transition-all outline-none cursor-pointer"
           >
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
+              <option key={c} value={c} className="bg-dark-card">
                 {c}
               </option>
             ))}
           </select>
         </label>
 
-        <label className="block text-sm">
-          <span className="text-ink/60 text-xs">Who</span>
-          <div className="flex gap-2 mt-1">
-            {PEOPLE.map((p) => (
-              <button
-                type="button"
-                key={p}
-                onClick={() => setForm((f) => ({ ...f, person: p }))}
-                className={clsx(
-                  "flex-1 py-2 text-sm rounded border",
-                  form.person === p
-                    ? "bg-ink text-paper border-ink"
-                    : "border-line text-ink/60"
-                )}
-              >
-                {p}
-              </button>
-            ))}
+        {/* WHO field - auto-filled from toggle */}
+        <div className="bg-dark-bg/50 border-2 border-neon-blue/20 rounded-lg px-4 py-3">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Adding for:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{currentUser === "Karthik" ? "👨" : "👩"}</span>
+              <span className="text-white font-gaming font-bold">{currentUser}</span>
+              <div className={`w-2 h-2 rounded-full ml-2 ${
+                currentUser === "Karthik" ? "bg-neon-blue" : "bg-neon-purple"
+              }`} style={{ animation: "pulse-dot 2s ease-in-out infinite" }} />
+            </div>
           </div>
-        </label>
+          <p className="text-gray-500 text-xs mt-2">
+            💡 Use the toggle button at the top-right to switch users
+          </p>
+        </div>
 
         <label className="block text-sm">
-          <span className="text-ink/60 text-xs">Note (optional)</span>
+          <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Note (optional)</span>
           <input
             type="text"
             value={form.note}
             onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-            className="mt-1 w-full border border-line rounded px-3 py-2 bg-paper"
+            className="mt-2 w-full border-2 border-dark-border rounded-lg px-4 py-3 bg-dark-card text-white focus:border-neon-blue focus:ring-2 focus:ring-neon-blue/20 transition-all outline-none placeholder-gray-600"
             placeholder="e.g. Swiggy, rent for July"
           />
         </label>
 
-        {error && <p className="text-rust text-xs">{error}</p>}
+        {error && (
+          <div className="bg-red-500/10 border-2 border-red-500/50 rounded-lg px-4 py-3 text-red-400 text-sm animate-slide-in">
+            ⚠️ {error}
+          </div>
+        )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-3 pt-2">
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 bg-ledger text-paper py-2.5 rounded text-sm font-medium disabled:opacity-50"
+            className="flex-1 gaming-button text-white py-3 rounded-lg text-sm font-gaming font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? "Saving…" : editingId ? "Save changes" : "Add entry"}
+            {saving ? "⏳ Saving…" : editingId ? "💾 Save Changes" : "➕ Add Entry"}
           </button>
           {editingId && (
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2.5 rounded text-sm border border-line text-ink/60"
+              className="px-6 py-3 rounded-lg text-sm font-gaming font-semibold border-2 border-dark-border text-gray-400 hover:border-red-500/50 hover:text-red-400 transition-all"
             >
-              Cancel
+              ✖️ Cancel
             </button>
           )}
         </div>
       </form>
 
-      <div className="ledger-card px-5 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <p className="font-display text-lg text-ledger">
-            All entries ({filtered.length})
-          </p>
-          <div className="flex gap-2 text-xs">
-            <select
-              value={filterPerson}
-              onChange={(e) => setFilterPerson(e.target.value as any)}
-              className="border border-line rounded px-2 py-1 bg-paper"
-            >
-              <option>All</option>
-              {PEOPLE.map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
+      <div className="gaming-card px-4 sm:px-6 py-5 sm:py-6 animate-slide-in">
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div>
+            <p className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              📊 All Entries
+            </p>
+            <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
+              {filtered.length} {filtered.length === 1 ? 'transaction' : 'transactions'}
+            </p>
+          </div>
+          <div className="flex gap-2 sm:gap-3 text-xs sm:text-sm">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as any)}
-              className="border border-line rounded px-2 py-1 bg-paper"
+              className="border-2 border-dark-border rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 bg-dark-card text-white focus:border-blue-500 outline-none cursor-pointer"
             >
-              <option>All</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
+              <option value="All">🔄 All</option>
+              <option value="income">💰 Income</option>
+              <option value="expense">💸 Expense</option>
             </select>
           </div>
         </div>
 
-        <div className="space-y-0 max-h-[600px] overflow-y-auto">
+        <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
           {filtered.length === 0 && (
-            <p className="text-sm text-ink/50 py-6 text-center">
-              No entries match this filter.
-            </p>
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📭</div>
+              <p className="text-gray-400 text-sm font-gaming">
+                No entries found
+              </p>
+            </div>
           )}
-          {filtered.map((entry) => (
+          {filtered.map((entry, index) => (
             <div
               key={entry.id}
-              className="flex items-center justify-between py-3 ledger-rule text-sm group"
+              className="flex items-center justify-between p-4 rounded-lg bg-dark-card border border-dark-border hover:border-neon-blue/50 transition-all duration-300 group"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="min-w-0">
-                <p className="text-ink truncate">
+              <div className="min-w-0 flex-1">
+                <p className="text-white font-semibold truncate flex items-center gap-2">
+                  <span className="text-xl">{entry.type === "income" ? "💰" : "💸"}</span>
                   {entry.category}
                   {entry.note && (
-                    <span className="text-ink/40"> — {entry.note}</span>
+                    <span className="text-gray-500 font-normal"> — {entry.note}</span>
                   )}
                 </p>
-                <p className="text-ink/40 text-xs font-mono">
-                  {entry.date} · {entry.person}
+                <p className="text-gray-400 text-xs font-mono mt-1">
+                  📅 {entry.date} · 👤 {entry.person}
                 </p>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-4 shrink-0 ml-4">
                 <p
-                  className="font-mono tabular-figures"
-                  style={{ color: entry.type === "income" ? "#0F3D2E" : "#B5502A" }}
+                  className={`font-mono tabular-figures text-lg font-bold ${
+                    entry.type === "income" ? "text-neon-green" : "text-neon-pink"
+                  }`}
                 >
                   {entry.type === "income" ? "+" : "-"}
                   {formatCurrency(entry.amount)}
                 </p>
-                <button
-                  onClick={() => startEdit(entry)}
-                  className="text-xs text-ink/40 hover:text-ink underline"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(entry.id)}
-                  className="text-xs text-ink/40 hover:text-rust underline"
-                >
-                  Delete
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => startEdit(entry)}
+                    className="text-xs text-gray-400 hover:text-neon-blue underline font-gaming transition-colors"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(entry.id)}
+                    className="text-xs text-gray-400 hover:text-red-400 underline font-gaming transition-colors"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}

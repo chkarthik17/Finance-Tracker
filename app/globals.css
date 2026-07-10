@@ -8,15 +8,79 @@
   --font-mono: ui-monospace, "SF Mono", "IBM Plex Mono", Consolas, monospace;
 }
 
+/* Smooth Dark Theme */
 body {
-  background-color: #faf7f2;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 27px,
-    #ece5d8 28px
-  );
-  color: #1b1b18;
+  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+  color: #e8eaed;
+  min-height: 100vh;
+}
+
+.gaming-card {
+  background: rgba(20, 24, 36, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gaming-card:hover {
+  background: rgba(20, 24, 36, 0.8);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+  transform: translateY(-4px);
+}
+
+.neon-border {
+  border: 2px solid transparent;
+  background: linear-gradient(#141824, #141824) padding-box,
+              linear-gradient(135deg, #00d4ff, #b845ff) border-box;
+  border-radius: 8px;
+}
+
+.neon-glow {
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5),
+              0 0 20px rgba(0, 212, 255, 0.3),
+              0 0 30px rgba(0, 212, 255, 0.1);
+}
+
+.gaming-button {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gaming-button:hover {
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px);
+}
+
+.gaming-button:active {
+  transform: scale(0.98);
+}
+
+/* Smooth gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 6s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Subtle pattern overlay */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 .ledger-card {
@@ -26,18 +90,61 @@ body {
 }
 
 .ledger-rule {
-  border-bottom: 1px solid #ddd6c8;
+  border-bottom: 1px solid rgba(30, 36, 51, 0.5);
 }
 
 .tabular-figures {
   font-variant-numeric: tabular-nums;
 }
 
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
+
+::-webkit-scrollbar-track {
+  background: #0a0e17;
+}
+
 ::-webkit-scrollbar-thumb {
-  background: #ddd6c8;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #00d4ff, #b845ff);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #00b8e6, #9f3de6);
+}
+
+/* Pulsing dot animation */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  .gaming-card {
+    border-radius: 12px;
+  }
 }

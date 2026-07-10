@@ -6,3 +6,11 @@ out
 .DS_Store
 *.log
 next-env.d.ts
+
+# Test files
+test-connection.js
+check-data.js
+add-test-entry.js
+
+# Vercel
+.vercel

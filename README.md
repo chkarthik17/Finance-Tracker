@@ -1,74 +1,34 @@
-# The Ledger — a shared finance tracker for two
+# 💰 Expense Tracker
 
-A Next.js app for tracking income, expenses, investments, and savings goals,
-shared between Karthik and Likhita. Data is stored in Supabase (Postgres),
-so it's real, persistent, and synced live between both of you — this is a
-proper cloud database, not local/browser storage.
+A personal expense tracking application for Karthik & Likhita.
 
-## What's inside
+## 🔐 Security
+- Protected with PIN code: `0823`
+- Auto-logout after 30 minutes
+- Secure session management
 
-- **Ledger** — net worth, cash balance, invested total, savings rate, monthly income/expense trend, spending by category, recent entries
-- **Entries** — add/edit/delete income & expense transactions, tagged by person and category
-- **Holdings** — track investments (amount invested vs. current value), with gain/loss
-- **Forecast** — projects cash balance 3/6/12 months out from your recent average net savings, plus an investment growth projection
-- **Plans** — savings goals with progress bars and target dates
+## ✨ Features
+- 📊 Real-time expense tracking
+- 👥 Separate dashboards for Karthik & Likhita
+- 📅 Date range filters (Today, Yesterday, Week, Month)
+- 💾 MongoDB Atlas backend
+- 📥 CSV export with organized format
+- 🗑️ Archive old data (2+ months)
+- 📱 Mobile responsive
 
-Both of you see the same data — no separate accounts, it's shared by design.
+## 🚀 Tech Stack
+- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Database:** MongoDB Atlas
+- **Hosting:** Vercel (Free)
 
-## 1. Set up the database (Supabase — free tier is enough)
+## 📦 Deployment
+See `DEPLOY_NOW.md` for step-by-step deployment instructions.
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** → New query → paste in the contents of `supabase-schema.sql` → **Run**. This creates the three tables and turns on live sync.
-3. Go to **Settings → API** and copy your **Project URL** and **anon public key**.
-
-## 2. Run it locally
-
-```bash
-cp .env.local.example .env.local   # then paste in your Supabase URL + anon key
-npm install
-npm run dev
+## 🔧 Environment Variables
+```env
+MONGODB_URI=your_mongodb_connection_string
 ```
 
-Visit `http://localhost:3000`.
-
-## 3. Deploy to Vercel
-
-1. Push this folder to a **private** GitHub repo (see below).
-2. Go to [vercel.com](https://vercel.com) → **Add New Project** → import that repo.
-3. In the project's **Environment Variables** settings, add the same two variables from your `.env.local`:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Deploy. Share the resulting URL with each other.
-
-## Pushing this to GitHub
-
-From inside this folder:
-
-```bash
-git add -A
-git commit -m "Initial commit: shared finance tracker"
-git branch -M main
-git remote add origin https://github.com/<your-username>/<repo-name>.git
-git push -u origin main
-```
-
-Create the empty repo on GitHub first (github.com → New repository — **keep it
-private**), then run the commands above.
-
-## A note on privacy
-
-There's no login screen. Anyone with your deployed URL and the anon key can
-read and write the data — that's the trade-off for a simple two-person app
-with no accounts. It's fine as a private link between the two of you, but:
-
-- Keep the GitHub repo **private**.
-- Don't post the deployed URL publicly.
-- If you want a real login layer later (so only you two can access it even
-  if the URL leaks), Supabase Auth with email/password or magic links is a
-  natural next step — ask and it can be added on top of this.
-
-## A note on the forecast
-
-The Forecast tab is a simple trend extrapolation from your recent average
-net savings and each holding's own implied return — not financial advice.
-Treat it as a rough guide, especially with only a few months of data.
+## 📝 License
+Private project - Not for public use

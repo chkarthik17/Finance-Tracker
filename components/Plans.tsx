@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import { supabase } from "@/lib/supabase";
+import { plansAPI } from "@/lib/api";
 import { Plan, PEOPLE, Person } from "@/lib/types";
 import { formatCurrency } from "@/lib/calculations";
 
@@ -48,16 +48,18 @@ export default function Plans({
       target_date: form.target_date || null,
       person: form.person,
     };
-    const { error: dbError } = editingId
-      ? await supabase.from("plans").update(payload).eq("id", editingId)
-      : await supabase.from("plans").insert(payload);
-    setSaving(false);
-    if (dbError) {
-      setError(dbError.message);
-      return;
+    try {
+      if (editingId) {
+        await plansAPI.update(editingId, payload);
+      } else {
+        await plansAPI.create(payload as any);
+      }
+      resetForm();
+      onChanged();
+    } catch (err: any) {
+      setError(err.message);
     }
-    resetForm();
-    onChanged();
+    setSaving(false);
   }
 
   function startEdit(p: Plan) {
@@ -72,13 +74,13 @@ export default function Plans({
   }
 
   async function handleDelete(id: string) {
-    const { error: dbError } = await supabase.from("plans").delete().eq("id", id);
-    if (dbError) {
-      setError(dbError.message);
-      return;
+    try {
+      await plansAPI.delete(id);
+      if (editingId === id) resetForm();
+      onChanged();
+    } catch (err: any) {
+      setError(err.message);
     }
-    if (editingId === id) resetForm();
-    onChanged();
   }
 
   return (
